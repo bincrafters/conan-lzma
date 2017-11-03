@@ -64,7 +64,6 @@ class LZMAConan(ConanFile):
             env_build.make()
             env_build.make(args=['install'])
 
-
     def build(self):
         if self.settings.compiler == 'Visual Studio':
             self.build_msvc()
