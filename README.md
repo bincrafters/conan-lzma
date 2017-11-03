@@ -1,25 +1,25 @@
-[ ![Download](https://api.bintray.com/packages/bincrafters/public-conan/somelib%3Abincrafters/images/download.svg?version=2.9.1%3Astable) ](https://bintray.com/bincrafters/public-conan/somelib%3Abincrafters/2.9.1%3Astable/link)
-[![Build Status](https://travis-ci.org/bincrafters/conan-somelib.svg?branch=stable%2F2.9.1)](https://travis-ci.org/bincrafters/conan-somelib)
-[![Build status](https://ci.appveyor.com/api/projects/status/a5snyovachh6e8nh?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-somelib)
+[ ![Download](https://api.bintray.com/packages/bincrafters/public-conan/lzma%3Abincrafters/images/download.svg?version=5.2.3%3Astable) ](https://bintray.com/bincrafters/public-conan/lzma%3Abincrafters/5.2.3%3Astable/link)
+[![Build Status](https://travis-ci.org/SSE4/conan-lzma.svg?branch=testing%2F5.2.3)](https://travis-ci.org/SSE4/conan-lzma)
+[![Build status](https://ci.appveyor.com/api/projects/status/liy7gce0098hdrm8/branch/testing/5.2.3?svg=true)](https://ci.appveyor.com/project/SSE4/conan-lzma/branch/testing/5.2.3)
 
-Brief statement describing somelib
+XZ Utils is free general-purpose data compression software with a high compression ratio
 
-[Conan.io](https://conan.io) package for [somelib](https://github.com/someauthor/somelib) project
+[Conan.io](https://conan.io) package for [lzma](https://tukaani.org/xz/) project
 
-The packages generated with this **conanfile** can be found in [Bintray](https://bintray.com/bincrafters/public-conan/somelib%3Abincrafters).
+The packages generated with this **conanfile** can be found in [Bintray](https://bintray.com/bincrafters/public-conan/lzma%3Abincrafters).
 
 ## For Users: Use this package
 
 ### Basic setup
 
-    $ conan install somelib/0.0.0@bincrafters/stable
+    $ conan install lzma/5.2.3@bincrafters/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    somelib/0.0.0@bincrafters/stable
+    lzma/5.2.3@bincrafters/stable
 
     [generators]
     txt
@@ -46,7 +46,7 @@ The following command both runs all the steps of the conan file, and publishes t
 
 ## Upload
 
-    $ conan upload somelib/0.0.0@bincrafters/stable --all -r bincrafters
+    $ conan upload lzma/5.2.3@bincrafters/stable --all -r bincrafters
 
 ### License
-[LICENSE_TYPE](https://github.com/someauthor/somelib/blob/master/LICENSE)
+[LGPLv2.1/GPLv2/GPLv3](https://git.tukaani.org/?p=xz.git;a=blob;f=COPYING;hb=HEAD)
