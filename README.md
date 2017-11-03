@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/SSE4/conan-lzma.svg?branch=testing%2F5.2.3)](https://travis-ci.org/SSE4/conan-lzma)
 [![Build status](https://ci.appveyor.com/api/projects/status/liy7gce0098hdrm8/branch/testing/5.2.3?svg=true)](https://ci.appveyor.com/project/SSE4/conan-lzma/branch/testing/5.2.3)
 
-XZ Utils is free general-purpose data compression software with a high compression ratio
+LZMA library is part of XZ Utils project. XZ Utils is free general-purpose data compression software with a high compression ratio.
 
 [Conan.io](https://conan.io) package for [lzma](https://tukaani.org/xz/) project
 

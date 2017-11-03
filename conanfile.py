@@ -12,7 +12,8 @@ class LZMAConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     url = "https://github.com/SSE4/conan-lzma"
-    description = "XZ Utils is free general-purpose data compression software with a high compression ratio"
+    description = "LZMA library is part of XZ Utils. """ \
+                  "XZ Utils is free general-purpose data compression software with a high compression ratio"
     license = "https://git.tukaani.org/?p=xz.git;a=blob;f=COPYING;hb=HEAD"
     root = "xz-" + version
     install_dir = 'lzma-install'
