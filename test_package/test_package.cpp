@@ -1,6 +1,7 @@
-// #include <cpprest/json.h>
+#include <lzma.h>
+#include <iostream>
 
 int main()
 {
-    // const auto parsed_value = web::json::value::parse(U("-22"));
+    std::cout << "LZMA version " << lzma_version_string() << std::endl;
 }
