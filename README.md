@@ -1,6 +1,6 @@
 [ ![Download](https://api.bintray.com/packages/bincrafters/public-conan/lzma%3Abincrafters/images/download.svg?version=5.2.3%3Astable) ](https://bintray.com/bincrafters/public-conan/lzma%3Abincrafters/5.2.3%3Astable/link)
-[![Build Status](https://travis-ci.org/SSE4/conan-lzma.svg?branch=testing%2F5.2.3)](https://travis-ci.org/SSE4/conan-lzma)
-[![Build status](https://ci.appveyor.com/api/projects/status/liy7gce0098hdrm8/branch/testing/5.2.3?svg=true)](https://ci.appveyor.com/project/SSE4/conan-lzma/branch/testing/5.2.3)
+[![Build Status](https://travis-ci.org/bincrafters/conan-lzma.svg?branch=stable%2F5.2.3)](https://travis-ci.org/bincrafters/conan-lzma)
+[![Build status](https://ci.appveyor.com/api/projects/status/6ax6khys8w72152d?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-lzma)
 
 LZMA library is part of XZ Utils project. XZ Utils is free general-purpose data compression software with a high compression ratio.
 
