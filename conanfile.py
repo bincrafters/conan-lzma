@@ -61,7 +61,11 @@ class LZMAConan(ConanFile):
                 args.extend(['--enable-static', '--disable-shared'])
             if self.settings.build_type == 'Debug':
                 args.append('--enable-debug')
-            env_build.configure(args=args)
+            if str(self.settings.os) in ["Macos", "iOS", "watchOS", "tvOS"]:
+                # disable host auto-detection, because configure fails to detect shared libraries support in that case
+                env_build.configure(args=args, build=False, host=False, target=False)
+            else:
+                env_build.configure(args=args)
             env_build.make()
             env_build.make(args=['install'])
 
