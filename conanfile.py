@@ -8,13 +8,13 @@ import os
 class LZMAConan(ConanFile):
     name = "lzma"
     version = "5.2.3"
+    description = "LZMA library is part of XZ Utils (a free general-purpose data compression software.)"
+    url = "https://github.com/SSE4/conan-lzma"
+    license = "Public Domain"
+    exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    url = "https://github.com/SSE4/conan-lzma"
-    description = "LZMA library is part of XZ Utils. """ \
-                  "XZ Utils is free general-purpose data compression software with a high compression ratio"
-    license = "https://git.tukaani.org/?p=xz.git;a=blob;f=COPYING;hb=HEAD"
     root = "xz-" + version
     install_dir = 'lzma-install'
 
