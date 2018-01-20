@@ -9,7 +9,7 @@ class LZMAConan(ConanFile):
     name = "lzma"
     version = "5.2.3"
     description = "LZMA library is part of XZ Utils (a free general-purpose data compression software.)"
-    url = "https://github.com/SSE4/conan-lzma"
+    url = "https://github.com/bincrafters/conan-lzma"
     license = "Public Domain"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
