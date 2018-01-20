@@ -15,8 +15,20 @@ class LZMAConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
+    url = "https://github.com/bincrafters/conan-lzma"
+    description = "LZMA library is part of XZ Utils. """ \
+                  "XZ Utils is free general-purpose data compression software with a high compression ratio"
+    license = "https://git.tukaani.org/?p=xz.git;a=blob;f=COPYING;hb=HEAD"
     root = "xz-" + version
-    install_dir = 'lzma-install'
+
+    @property
+    def is_mingw(self):
+        return self.settings.compiler == 'gcc' and self.settings.os == 'Windows'
+
+    def build_requirements(self):
+        if self.is_mingw:
+            self.build_requires('msys2_installer/latest@bincrafters/stable')
+            self.build_requires('mingw_installer/1.0@conan/stable')
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -47,9 +59,11 @@ class LZMAConan(ConanFile):
             self.run(command)
 
     def build_configure(self):
-        prefix = os.path.abspath(self.install_dir)
+        prefix = os.path.abspath(self.package_folder)
+        if self.is_mingw:
+            prefix = tools.unix_path(prefix, tools.MSYS2)
         with tools.chdir(self.root):
-            env_build = AutoToolsBuildEnvironment(self)
+            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw)
             args = ['--disable-xz',
                     '--disable-xzdec',
                     '--disable-lzmadec',
@@ -65,23 +79,24 @@ class LZMAConan(ConanFile):
                 args.extend(['--enable-static', '--disable-shared'])
             if self.settings.build_type == 'Debug':
                 args.append('--enable-debug')
-            if str(self.settings.os) in ["Macos", "iOS", "watchOS", "tvOS"]:
-                # disable host auto-detection, because configure fails to detect shared libraries support in that case
-                env_build.configure(args=args, build=False, host=False, target=False)
-            else:
-                env_build.configure(args=args)
+            env_build.configure(args=args)
             env_build.make()
             env_build.make(args=['install'])
 
     def build(self):
         if self.settings.compiler == 'Visual Studio':
             self.build_msvc()
+        elif self.is_mingw:
+            msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
+            with tools.environment_append({'PATH': [msys_bin],
+                                           'CONAN_BASH_PATH': os.path.join(msys_bin, 'bash.exe')}):
+                self.build_configure()
         else:
             self.build_configure()
 
     def package(self):
         self.copy(pattern="COPYING", dst="license", src=self.root)
-        if self.settings.os == "Windows":
+        if self.settings.compiler == "Visual Studio":
             inc_dir = os.path.join(self.root, 'src', 'liblzma', 'api')
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
             arch = {'x86': 'Win32', 'x86_64': 'x64'}.get(str(self.settings.arch))
@@ -90,20 +105,6 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
-        else:
-            inc_dir = os.path.join(self.install_dir, 'include')
-            lib_dir = os.path.join(self.install_dir, 'lib')
-            self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
-            if str(self.settings.os) in ['Linux', 'Android']:
-                if self.options.shared:
-                    self.copy(pattern="*.so*", dst="lib", src=lib_dir, keep_path=False)
-                else:
-                    self.copy(pattern="*.a", dst="lib", src=lib_dir, keep_path=False)
-            elif str(self.settings.os) in ['Macos', 'iOS', 'watchOS', 'tvOS']:
-                if self.options.shared:
-                    self.copy(pattern="*.dylib*", dst="lib", src=lib_dir, keep_path=False)
-                else:
-                    self.copy(pattern="*.a", dst="lib", src=lib_dir, keep_path=False)
 
     def package_info(self):
         if not self.options.shared:
