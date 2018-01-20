@@ -76,6 +76,7 @@ class LZMAConan(ConanFile):
             self.build_configure()
 
     def package(self):
+        self.copy(pattern="COPYING", dst="license", src=self.root)
         if self.settings.os == "Windows":
             inc_dir = os.path.join(self.root, 'src', 'liblzma', 'api')
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
