@@ -13,13 +13,15 @@ class LZMAConan(ConanFile):
     license = "Public Domain"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
     root = "xz-" + version
     install_dir = 'lzma-install'
 
     def configure(self):
         del self.settings.compiler.libcxx
+        if self.settings.compiler == 'Visual Studio':
+            del self.options.fPIC
 
     def source(self):
         archive_name = "xz-%s.tar.gz" % self.version
@@ -55,6 +57,8 @@ class LZMAConan(ConanFile):
                     '--disable-scripts',
                     '--disable-doc',
                     '--prefix=%s' % prefix]
+            if self.options.fPIC:
+                args.append('--with-pic')
             if self.options.shared:
                 args.extend(['--disable-static', '--enable-shared'])
             else:
