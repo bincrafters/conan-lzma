@@ -41,7 +41,7 @@ class LZMAConan(ConanFile):
                 tools.replace_in_file('%s.vcxproj' % target,
                                       '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>',
                                       '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>')
-            command = tools.msvc_build_command(self.settings, 'xz_win.sln', targets=[target], upgrade_project=True)
+            command = tools.msvc_build_command(self.settings, 'xz_win.sln', targets=[target], upgrade_project=False)
             if self.settings.arch == 'x86':
                 command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
             self.run(command)
