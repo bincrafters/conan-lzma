@@ -79,7 +79,7 @@ class LZMAConan(ConanFile):
                 args.extend(['--enable-static', '--disable-shared'])
             if self.settings.build_type == 'Debug':
                 args.append('--enable-debug')
-            env_build.configure(args=args)
+            env_build.configure(args=args, build=False)
             env_build.make()
             env_build.make(args=['install'])
 
