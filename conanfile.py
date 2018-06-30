@@ -3,6 +3,7 @@
 
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
+import shutil
 
 
 class LZMAConan(ConanFile):
@@ -100,6 +101,8 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
+            shutil.move(os.path.join(self.package_folder, 'lib', 'liblzma.lib'),
+                        os.path.join(self.package_folder, 'lib', 'lzma.lib'))
 
     def package_info(self):
         if not self.options.shared:
