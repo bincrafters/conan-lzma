@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
 
 
@@ -46,17 +46,12 @@ class LZMAConan(ConanFile):
         # windows\INSTALL-MSVC.txt
         with tools.chdir(os.path.join(self.root, 'windows')):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-            if str(self.settings.compiler.runtime).startswith('MT'):
-                tools.replace_in_file('%s.vcxproj' % target,
-                                      '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>',
-                                      '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>')
-                tools.replace_in_file('%s.vcxproj' % target,
-                                      '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>',
-                                      '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>')
-            command = tools.msvc_build_command(self.settings, 'xz_win.sln', targets=[target], upgrade_project=False)
-            if self.settings.arch == 'x86':
-                command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
-            self.run(command)
+
+            msbuild = MSBuild(self)
+            msbuild.build(
+                'xz_win.sln',
+                targets=[target],
+                platforms={"x86":"Win32"})
 
     def build_configure(self):
         prefix = os.path.abspath(self.package_folder)
