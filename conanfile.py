@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
+import shutil
 
 
 class LZMAConan(ConanFile):
@@ -22,13 +23,9 @@ class LZMAConan(ConanFile):
     root = "xz-" + version
 
     @property
-    def is_mingw(self):
-        return self.settings.compiler == 'gcc' and self.settings.os == 'Windows'
-
-    def build_requirements(self):
-        if self.is_mingw:
-            self.build_requires('msys2_installer/latest@bincrafters/stable')
-            self.build_requires('mingw_installer/1.0@conan/stable')
+    def is_mingw_windows(self):
+        # Linux MinGW doesn't require MSYS2 bash obviously
+        return self.settings.compiler == 'gcc' and self.settings.os == 'Windows' and os.name == 'nt'
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -46,24 +43,19 @@ class LZMAConan(ConanFile):
         # windows\INSTALL-MSVC.txt
         with tools.chdir(os.path.join(self.root, 'windows')):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-            if str(self.settings.compiler.runtime).startswith('MT'):
-                tools.replace_in_file('%s.vcxproj' % target,
-                                      '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>',
-                                      '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>')
-                tools.replace_in_file('%s.vcxproj' % target,
-                                      '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>',
-                                      '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>')
-            command = tools.msvc_build_command(self.settings, 'xz_win.sln', targets=[target], upgrade_project=False)
-            if self.settings.arch == 'x86':
-                command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
-            self.run(command)
+
+            msbuild = MSBuild(self)
+            msbuild.build(
+                'xz_win.sln',
+                targets=[target],
+                platforms={"x86":"Win32"})
 
     def build_configure(self):
         prefix = os.path.abspath(self.package_folder)
-        if self.is_mingw:
+        if self.is_mingw_windows:
             prefix = tools.unix_path(prefix, tools.MSYS2)
         with tools.chdir(self.root):
-            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw)
+            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw_windows)
             args = ['--disable-xz',
                     '--disable-xzdec',
                     '--disable-lzmadec',
@@ -86,7 +78,7 @@ class LZMAConan(ConanFile):
     def build(self):
         if self.settings.compiler == 'Visual Studio':
             self.build_msvc()
-        elif self.is_mingw:
+        elif self.is_mingw_windows:
             msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
             with tools.environment_append({'PATH': [msys_bin],
                                            'CONAN_BASH_PATH': os.path.join(msys_bin, 'bash.exe')}):
@@ -105,6 +97,8 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
+            shutil.move(os.path.join(self.package_folder, 'lib', 'liblzma.lib'),
+                        os.path.join(self.package_folder, 'lib', 'lzma.lib'))
 
     def package_info(self):
         if not self.options.shared:
