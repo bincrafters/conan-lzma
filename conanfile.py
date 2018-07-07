@@ -23,13 +23,9 @@ class LZMAConan(ConanFile):
     root = "xz-" + version
 
     @property
-    def is_mingw(self):
-        return self.settings.compiler == 'gcc' and self.settings.os == 'Windows'
-
-    def build_requirements(self):
-        if self.is_mingw:
-            self.build_requires('msys2_installer/latest@bincrafters/stable')
-            self.build_requires('mingw_installer/1.0@conan/stable')
+    def is_mingw_windows(self):
+        # Linux MinGW doesn't require MSYS2 bash obviously
+        return self.settings.compiler == 'gcc' and self.settings.os == 'Windows' and os.name == 'nt'
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -56,10 +52,10 @@ class LZMAConan(ConanFile):
 
     def build_configure(self):
         prefix = os.path.abspath(self.package_folder)
-        if self.is_mingw:
+        if self.is_mingw_windows:
             prefix = tools.unix_path(prefix, tools.MSYS2)
         with tools.chdir(self.root):
-            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw)
+            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw_windows)
             args = ['--disable-xz',
                     '--disable-xzdec',
                     '--disable-lzmadec',
@@ -82,7 +78,7 @@ class LZMAConan(ConanFile):
     def build(self):
         if self.settings.compiler == 'Visual Studio':
             self.build_msvc()
-        elif self.is_mingw:
+        elif self.is_mingw_windows:
             msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
             with tools.environment_append({'PATH': [msys_bin],
                                            'CONAN_BASH_PATH': os.path.join(msys_bin, 'bash.exe')}):
