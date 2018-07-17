@@ -8,18 +8,17 @@ import shutil
 
 class LZMAConan(ConanFile):
     name = "lzma"
-    version = "5.2.3"
+    version = "5.2.4"
     description = "LZMA library is part of XZ Utils (a free general-purpose data compression software.)"
     url = "https://github.com/bincrafters/conan-lzma"
+    homepage = "https://tukaani.org"
     license = "Public Domain"
+    author = "Bincrafters <bincrafters@gmail.com>"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
-    url = "https://github.com/bincrafters/conan-lzma"
-    description = "LZMA library is part of XZ Utils. """ \
-                  "XZ Utils is free general-purpose data compression software with a high compression ratio"
-    license = "https://git.tukaani.org/?p=xz.git;a=blob;f=COPYING;hb=HEAD"
+    description = "LZMA library is part of XZ Utils"
     root = "xz-" + version
 
     @property
