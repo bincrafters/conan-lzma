@@ -48,7 +48,8 @@ class LZMAConan(ConanFile):
             msbuild.build(
                 'xz_win.sln',
                 targets=[target],
-                platforms={"x86":"Win32"})
+                platforms={"x86":"Win32"},
+                upgrade_project=False)
 
     def build_configure(self):
         prefix = os.path.abspath(self.package_folder)
