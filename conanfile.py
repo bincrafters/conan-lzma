@@ -40,7 +40,8 @@ class LZMAConan(ConanFile):
 
     def build_msvc(self):
         # windows\INSTALL-MSVC.txt
-        with tools.chdir(os.path.join(self.root, 'windows')):
+        version_dir = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
+        with tools.chdir(os.path.join(self.root, 'windows', version_dir)):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
 
             msbuild = MSBuild(self)
