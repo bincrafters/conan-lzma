@@ -38,7 +38,7 @@ class LZMAConan(ConanFile):
 
     def build_msvc(self):
         # windows\INSTALL-MSVC.txt
-        msvc_version = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
+        msvc_version = 'vs2017' if int(self.settings.compiler.version) >= 15 else 'vs2013'
         with tools.chdir(os.path.join(self.root, 'windows', msvc_version)):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
             msbuild = MSBuild(self)
@@ -91,7 +91,7 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
             arch = {'x86': 'Win32', 'x86_64': 'x64'}.get(str(self.settings.arch))
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-            msvc_version = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
+            msvc_version = 'vs2017' if int(self.settings.compiler.version) >= 15 else 'vs2013'
             bin_dir = os.path.join(self.root, 'windows', msvc_version, str(self.settings.build_type), arch, target)
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
