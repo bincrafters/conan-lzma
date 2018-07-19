@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
-import shutil
 
 
 class LZMAConan(ConanFile):
@@ -40,16 +38,15 @@ class LZMAConan(ConanFile):
 
     def build_msvc(self):
         # windows\INSTALL-MSVC.txt
-        version_dir = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
-        with tools.chdir(os.path.join(self.root, 'windows', version_dir)):
+        msvc_version = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
+        with tools.chdir(os.path.join(self.root, 'windows', msvc_version)):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-
             msbuild = MSBuild(self)
             msbuild.build(
                 'xz_win.sln',
                 targets=[target],
-                platforms={"x86":"Win32"},
-                upgrade_project=False)
+                platforms={'x86': 'Win32', 'x86_64': 'x64'},
+                use_env=False)
 
     def build_configure(self):
         prefix = os.path.abspath(self.package_folder)
@@ -94,12 +91,11 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
             arch = {'x86': 'Win32', 'x86_64': 'x64'}.get(str(self.settings.arch))
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-            bin_dir = os.path.join(self.root, 'windows', str(self.settings.build_type), arch, target)
+            msvc_version = 'vs2017' if self.settings.compiler.version >= 15 else 'vs2013'
+            bin_dir = os.path.join(self.root, 'windows', msvc_version, str(self.settings.build_type), arch, target)
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
-            shutil.move(os.path.join(self.package_folder, 'lib', 'liblzma.lib'),
-                        os.path.join(self.package_folder, 'lib', 'lzma.lib'))
 
     def package_info(self):
         if not self.options.shared:
