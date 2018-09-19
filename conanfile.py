@@ -27,6 +27,10 @@ class LZMAConan(ConanFile):
         # Linux MinGW doesn't require MSYS2 bash obviously
         return self.settings.compiler == 'gcc' and self.settings.os == 'Windows' and os.name == 'nt'
 
+    def _effective_msbuild_type(self):
+        # treat 'RelWithDebInfo' and 'MinSizeRel' as 'Release'
+        return 'Debug' if self.settings.build_type == 'Debug' else 'Release'
+
     def configure(self):
         del self.settings.compiler.libcxx
         if self.settings.compiler == 'Visual Studio':
@@ -48,6 +52,7 @@ class LZMAConan(ConanFile):
             msbuild.build(
                 'xz_win.sln',
                 targets=[target],
+                build_type=self._effective_msbuild_type(),
                 platforms={"x86":"Win32"})
 
     def build_configure(self):
@@ -93,7 +98,7 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
             arch = {'x86': 'Win32', 'x86_64': 'x64'}.get(str(self.settings.arch))
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
-            bin_dir = os.path.join(self.root, 'windows', str(self.settings.build_type), arch, target)
+            bin_dir = os.path.join(self.root, 'windows', str(self._effective_msbuild_type()), arch, target)
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
