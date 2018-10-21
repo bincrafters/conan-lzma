@@ -15,12 +15,12 @@ class LZMAConan(ConanFile):
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    default_options = {'shared': False, 'fPIC': True}
     description = "LZMA library is part of XZ Utils"
-    root = "xz-" + version
+    _source_subfolder = 'sources'
 
     @property
-    def is_mingw_windows(self):
+    def _is_mingw_windows(self):
         # Linux MinGW doesn't require MSYS2 bash obviously
         return self.settings.compiler == 'gcc' and self.settings.os == 'Windows' and os.name == 'nt'
 
@@ -36,15 +36,14 @@ class LZMAConan(ConanFile):
     def source(self):
         archive_name = "xz-%s.tar.gz" % self.version
         source_url = "https://tukaani.org/xz/%s" % archive_name
-        tools.download(source_url, archive_name, verify=True)
-        tools.untargz(archive_name)
-        os.unlink(archive_name)
+        tools.get(source_url)
+        os.rename('xz-' + self.version, self._source_subfolder)
 
-    def build_msvc(self):
+    def _build_msvc(self):
         # windows\INSTALL-MSVC.txt
         compiler_version = float(self.settings.compiler.version.value)
         msvc_version = 'vs2017' if compiler_version >= 15 else 'vs2013'
-        with tools.chdir(os.path.join(self.root, 'windows', msvc_version)):
+        with tools.chdir(os.path.join(self._source_subfolder, 'windows', msvc_version)):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
             msbuild = MSBuild(self)
             msbuild.build(
@@ -54,20 +53,16 @@ class LZMAConan(ConanFile):
                 platforms={'x86': 'Win32', 'x86_64': 'x64'},
                 use_env=False)
 
-    def build_configure(self):
-        prefix = os.path.abspath(self.package_folder)
-        if self.is_mingw_windows:
-            prefix = tools.unix_path(prefix, tools.MSYS2)
-        with tools.chdir(self.root):
-            env_build = AutoToolsBuildEnvironment(self, win_bash=self.is_mingw_windows)
+    def _build_configure(self):
+        with tools.chdir(self._source_subfolder):
+            env_build = AutoToolsBuildEnvironment(self, win_bash=self._is_mingw_windows)
             args = ['--disable-xz',
                     '--disable-xzdec',
                     '--disable-lzmadec',
                     '--disable-lzmainfo',
                     '--disable-scripts',
-                    '--disable-doc',
-                    '--prefix=%s' % prefix]
-            if self.options.fPIC:
+                    '--disable-doc']
+            if self.settings.os != "Windows" and self.options.fPIC:
                 args.append('--with-pic')
             if self.options.shared:
                 args.extend(['--disable-static', '--enable-shared'])
@@ -77,29 +72,25 @@ class LZMAConan(ConanFile):
                 args.append('--enable-debug')
             env_build.configure(args=args, build=False)
             env_build.make()
-            env_build.make(args=['install'])
+            env_build.install()
 
     def build(self):
         if self.settings.compiler == 'Visual Studio':
-            self.build_msvc()
-        elif self.is_mingw_windows:
-            msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
-            with tools.environment_append({'PATH': [msys_bin],
-                                           'CONAN_BASH_PATH': os.path.join(msys_bin, 'bash.exe')}):
-                self.build_configure()
+            self._build_msvc()
         else:
-            self.build_configure()
+            self._build_configure()
 
     def package(self):
-        self.copy(pattern="COPYING", dst="license", src=self.root)
+        self.copy(pattern="COPYING", dst="licenses", src=self._source_subfolder)
         if self.settings.compiler == "Visual Studio":
-            inc_dir = os.path.join(self.root, 'src', 'liblzma', 'api')
+            inc_dir = os.path.join(self._source_subfolder, 'src', 'liblzma', 'api')
             self.copy(pattern="*.h", dst="include", src=inc_dir, keep_path=True)
             arch = {'x86': 'Win32', 'x86_64': 'x64'}.get(str(self.settings.arch))
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
             compiler_version = float(self.settings.compiler.version.value)
             msvc_version = 'vs2017' if compiler_version >= 15 else 'vs2013'
-            bin_dir = os.path.join(self.root, 'windows', msvc_version, str(self._effective_msbuild_type()), arch, target)
+            bin_dir = os.path.join(self._source_subfolder, 'windows', msvc_version,
+                                   str(self._effective_msbuild_type()), arch, target)
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
