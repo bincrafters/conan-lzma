@@ -24,6 +24,10 @@ class LZMAConan(ConanFile):
         # Linux MinGW doesn't require MSYS2 bash obviously
         return self.settings.compiler == 'gcc' and self.settings.os == 'Windows' and os.name == 'nt'
 
+    def build_requirements(self):
+        if self._is_mingw_windows:
+            self.build_requires("msys2_installer/latest@bincrafters/stable")
+
     def _effective_msbuild_type(self):
         # treat 'RelWithDebInfo' and 'MinSizeRel' as 'Release'
         return 'Debug' if self.settings.build_type == 'Debug' else 'Release'
