@@ -100,6 +100,9 @@ class LZMAConan(ConanFile):
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
 
     def package_info(self):
+        self.cpp_info.builddirs = ["lib/pkgconfig"]
         if not self.options.shared:
             self.cpp_info.defines.append('LZMA_API_STATIC')
         self.cpp_info.libs = tools.collect_libs(self)
+        
+        
