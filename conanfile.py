@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
+import six
 
 
 class LZMAConan(ConanFile):
@@ -18,6 +19,46 @@ class LZMAConan(ConanFile):
     default_options = {'shared': False, 'fPIC': True}
     description = "LZMA library is part of XZ Utils"
     _source_subfolder = 'sources'
+
+    # copied from conan, need to make expose it
+    def _system_registry_key(self, key, subkey, query):
+        from six.moves import winreg  # @UnresolvedImport
+        try:
+            hkey = winreg.OpenKey(key, subkey)
+        except (OSError, WindowsError):  # Raised by OpenKey/Ex if the function fails (py3, py2)
+            return None
+        else:
+            try:
+                value, _ = winreg.QueryValueEx(hkey, query)
+                return value
+            except EnvironmentError:
+                return None
+            finally:
+                winreg.CloseKey(hkey)
+
+    def _find_windows_10_sdk(self):
+        """finds valid Windows 10 SDK version which can be passed to vcvarsall.bat (vcvars_command)"""
+        # uses the same method as VCVarsQueryRegistry.bat
+        from six.moves import winreg  # @UnresolvedImport
+        hives = [
+            (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Wow6432Node'),
+            (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Wow6432Node'),
+            (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE'),
+            (winreg.HKEY_CURRENT_USER, r'SOFTWARE')
+        ]
+        for key, subkey in hives:
+            subkey = r'%s\Microsoft\Microsoft SDKs\Windows\v10.0' % subkey
+            installation_folder = self._system_registry_key(key, subkey, 'InstallationFolder')
+            if installation_folder:
+                if os.path.isdir(installation_folder):
+                    include_dir = os.path.join(installation_folder, 'include')
+                    for sdk_version in os.listdir(include_dir):
+                        if (os.path.isdir(os.path.join(include_dir, sdk_version))
+                                and sdk_version.startswith('10.')):
+                            windows_h = os.path.join(include_dir, sdk_version, 'um', 'Windows.h')
+                            if os.path.isfile(windows_h):
+                                return sdk_version
+        return None
 
     @property
     def _is_mingw_windows(self):
@@ -55,7 +96,8 @@ class LZMAConan(ConanFile):
                 targets=[target],
                 build_type=self._effective_msbuild_type(),
                 platforms={'x86': 'Win32', 'x86_64': 'x64'},
-                use_env=False)
+                use_env=False,
+                winsdk_version=self._find_windows_10_sdk())
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
@@ -98,6 +140,9 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
+        la = os.path.join(self.package_folder, "lib", "liblzma.la")
+        if os.path.isfile(la):
+            os.unlink(la)
 
     def package_info(self):
         self.cpp_info.builddirs = ["lib/pkgconfig"]
