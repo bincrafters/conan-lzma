@@ -98,6 +98,9 @@ class LZMAConan(ConanFile):
             self.copy(pattern="*.lib", dst="lib", src=bin_dir, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=bin_dir, keep_path=False)
+        la = os.path.join(self.package_folder, "lib", "liblzma.la")
+        if os.path.isfile(la):
+            os.unlink(la)
 
     def package_info(self):
         if not self.options.shared:
