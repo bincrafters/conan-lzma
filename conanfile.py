@@ -91,13 +91,17 @@ class LZMAConan(ConanFile):
         with tools.chdir(os.path.join(self._source_subfolder, 'windows', msvc_version)):
             target = 'liblzma_dll' if self.options.shared else 'liblzma'
             msbuild = MSBuild(self)
+            winsdk_version = self._find_windows_10_sdk()
+            if not winsdk_version:
+                raise Exception("Windows 10 SDK wasn't found")
+            self.output.info("using Windows 10 SDK: %s" % winsdk_version)
             msbuild.build(
                 'xz_win.sln',
                 targets=[target],
                 build_type=self._effective_msbuild_type(),
                 platforms={'x86': 'Win32', 'x86_64': 'x64'},
                 use_env=False,
-                winsdk_version=self._find_windows_10_sdk())
+                winsdk_version=winsdk_version)
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
