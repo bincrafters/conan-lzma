@@ -94,7 +94,11 @@ class LZMAConan(ConanFile):
             winsdk_version = self._find_windows_10_sdk()
             if not winsdk_version:
                 raise Exception("Windows 10 SDK wasn't found")
-            self.output.info("using Windows 10 SDK: %s" % winsdk_version)
+            if msvc_version == "vs2017":
+                for project in ["liblzma.vcxproj", "liblzma_dll.vcxproj"]:
+                    tools.replace_in_file(project,
+                            "<WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>",
+                            "<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>" % winsdk_version)
             msbuild.build(
                 'xz_win.sln',
                 targets=[target],
