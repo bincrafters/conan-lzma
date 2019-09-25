@@ -1,3 +1,5 @@
+**OBSOLETE** The recipe is now in https://github.com/conan-io/conan-center-index
+
 [![Download](https://api.bintray.com/packages/bincrafters/public-conan/lzma%3Abincrafters/images/download.svg) ](https://bintray.com/bincrafters/public-conan/lzma%3Abincrafters/_latestVersion)
 [![Build Status Travis](https://travis-ci.com/bincrafters/conan-lzma.svg?branch=stable%2F5.2.4)](https://travis-ci.com/bincrafters/conan-lzma)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/bincrafters/conan-lzma?branch=stable%2F5.2.4&svg=true)](https://ci.appveyor.com/project/bincrafters/conan-lzma)
